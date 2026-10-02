@@ -1,0 +1,11 @@
+@import 'primeicons/primeicons.css';
+@import '@fullcalendar/angular/skeleton.css';
+@import '@fullcalendar/angular/themes/classic/theme.css';
+@import '@fullcalendar/angular/themes/classic/palette.css';
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #f6f8fb;
+}

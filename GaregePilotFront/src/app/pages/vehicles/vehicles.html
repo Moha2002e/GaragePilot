@@ -1,0 +1,48 @@
+<header class="page-header">
+  <div>
+    <h1>Véhicules</h1>
+    <p>Retrouvez rapidement un véhicule par sa plaque.</p>
+  </div>
+  <button type="button">+ Nouveau véhicule</button>
+</header>
+<section class="toolbar">
+  <label>
+    <i class="pi pi-search"></i>
+    <input
+      #vehicleSearch
+      type="search"
+      placeholder="Plaque, VIN, marque ou modèle"
+      (input)="state.setSearch(vehicleSearch.value)"
+    />
+  </label>
+</section>
+@if (state.loading()) {
+  <p>Chargement…</p>
+}
+@if (state.error()) {
+  <p class="error">{{ state.error() }}</p>
+}
+<div class="table">
+  <div class="row head">
+    <span>Plaque</span><span>Marque</span><span>Modèle</span><span>Kilométrage</span>
+  </div>
+  @for (vehicle of state.vehicles(); track vehicle.id) {
+    <div class="row">
+      <strong>{{ vehicle.licensePlate }}</strong
+      ><span>{{ vehicle.brand }}</span
+      ><span>{{ vehicle.model }}</span
+      ><span>{{ vehicle.mileage || '—' }}</span>
+    </div>
+  } @empty {
+    @if (!state.loading()) {
+      <p class="empty">Aucun véhicule.</p>
+    }
+  }
+  <app-pagination
+    [totalElements]="state.totalElements()"
+    [page]="state.page()"
+    [pageSize]="state.pageSize()"
+    (pageChange)="state.changePage($event)"
+    (pageSizeChange)="state.changePageSize($event)"
+  />
+</div>

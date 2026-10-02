@@ -1,0 +1,46 @@
+<div class="shell" [class.closed]="!sidebarOpen()">
+  <aside>
+    <a routerLink="/dashboard" class="brand"><i class="pi pi-car"></i><span>GaragePilot</span></a>
+    <nav>
+      <a routerLink="/dashboard" routerLinkActive="active"
+        ><i class="pi pi-chart-bar"></i><span>Dashboard</span></a
+      >
+      <a routerLink="/planning" routerLinkActive="active"
+        ><i class="pi pi-calendar"></i><span>Planning</span></a
+      >
+      <a routerLink="/clients" routerLinkActive="active"
+        ><i class="pi pi-users"></i><span>Clients</span></a
+      >
+      <a routerLink="/vehicles" routerLinkActive="active"
+        ><i class="pi pi-car"></i><span>Véhicules</span></a
+      >
+      <a routerLink="/services" routerLinkActive="active"
+        ><i class="pi pi-list-check"></i><span>Prestations</span></a
+      >
+      <a routerLink="/work-orders" routerLinkActive="active"
+        ><i class="pi pi-wrench"></i><span>Atelier</span></a
+      >
+      <a routerLink="/invoices" routerLinkActive="active"
+        ><i class="pi pi-receipt"></i><span>Factures</span></a
+      >
+      @if (isPlatformAdmin) {
+        <span class="nav-divider"></span>
+        <a routerLink="/admin" routerLinkActive="active"
+          ><i class="pi pi-building"></i><span>Administration</span></a
+        >
+      }
+    </nav>
+  </aside>
+  <main>
+    <header>
+      <button type="button" (click)="toggleSidebar()" aria-label="Afficher ou masquer le menu">
+        <i class="pi pi-bars"></i>
+      </button>
+      <b>{{ user ? user.firstName + ' ' + user.lastName : 'Mon garage' }}</b>
+      <button type="button" class="logout" (click)="logout()">
+        <i class="pi pi-sign-out"></i><span>Déconnexion</span>
+      </button>
+    </header>
+    <section class="content"><router-outlet /></section>
+  </main>
+</div>

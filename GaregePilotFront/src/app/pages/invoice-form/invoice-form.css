@@ -1,0 +1,178 @@
+:host {
+  display: block;
+  max-width: 1280px;
+}
+
+.page-header {
+  margin-bottom: 22px;
+}
+
+.back {
+  color: #167a5b;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+h1 {
+  margin: 12px 0 5px;
+}
+
+.page-header p,
+.section-title p {
+  margin: 0;
+  color: #667085;
+}
+
+form {
+  display: grid;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #fff;
+  padding: 22px;
+}
+
+.identity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+}
+
+label span {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+input,
+select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #fff;
+  padding: 9px 11px;
+  color: #101828;
+  font: inherit;
+}
+
+input:focus,
+select:focus {
+  border-color: #167a5b;
+  outline: 3px solid #d1fadf;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.line-list {
+  display: grid;
+  gap: 12px;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 140px minmax(220px, 1fr) 100px 120px 100px 42px;
+  align-items: end;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+button,
+.cancel {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.secondary,
+.cancel {
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #344054;
+}
+
+.remove {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.primary {
+  background: #167a5b;
+  color: #fff;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  color: #b42318;
+}
+
+@media (max-width: 1000px) {
+  .line {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .description {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 680px) {
+  .identity-grid,
+  .line {
+    grid-template-columns: 1fr;
+  }
+
+  .description {
+    grid-column: auto;
+  }
+
+  .section-title,
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

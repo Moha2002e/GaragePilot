@@ -1,0 +1,214 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">Administration plateforme</span>
+    <h1>Sociétés GaragePilot</h1>
+    <p>Gérez les garages, leurs utilisateurs et leur activité de facturation.</p>
+  </div>
+</header>
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+@if (loading()) {
+  <div class="state"><i class="pi pi-spin pi-spinner"></i> Chargement de la plateforme…</div>
+} @else if (overview(); as data) {
+  <section class="kpis">
+    <article>
+      <small>Sociétés</small
+      ><strong
+        >{{ data.activeGarages }} <span>/ {{ data.garages }}</span></strong
+      >
+    </article>
+    <article>
+      <small>Utilisateurs</small><strong>{{ data.users }}</strong>
+    </article>
+    @if (data.clients !== undefined) {
+      <article>
+        <small>Clients</small><strong>{{ data.clients }}</strong>
+      </article>
+    }
+    @if (data.vehicles !== undefined) {
+      <article>
+        <small>Véhicules</small><strong>{{ data.vehicles }}</strong>
+      </article>
+    }
+    <article>
+      <small>Factures émises</small><strong>{{ data.invoices }}</strong>
+    </article>
+    <article>
+      <small>Volume facturé</small
+      ><strong>{{ data.platformRevenue | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE' }}</strong>
+    </article>
+    <article class="warning">
+      <small>À encaisser</small
+      ><strong>{{ data.outstandingTotal | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE' }}</strong>
+    </article>
+  </section>
+  <section class="company-panel">
+    <header>
+      <div>
+        <h2>Toutes les sociétés</h2>
+        <p>Vue consolidée des comptes clients de la plateforme</p>
+      </div>
+      <span>{{ data.companies.totalElements }} résultats</span>
+    </header>
+    <label class="company-search">
+      <i class="pi pi-search"></i>
+      <input
+        #companySearch
+        type="search"
+        placeholder="Nom, TVA, email ou ville"
+        (input)="setSearch(companySearch.value)"
+      />
+    </label>
+    <div class="company-table">
+      <div class="row head">
+        <span>Société</span><span>Localisation</span><span>Utilisateurs</span><span>Clients</span
+        ><span>Véhicules</span><span>Factures</span><span>CA facturé</span><span>À encaisser</span
+        ><span>Statut</span><span></span>
+      </div>
+      @for (company of data.companies.content; track company.id) {
+        <button class="row" type="button" (click)="openGarage(company)">
+          <span
+            ><b>{{ company.name }}</b
+            ><small>{{ company.vatNumber || company.email }}</small></span
+          ><span>{{ company.city || '—' }}</span
+          ><span>{{ company.users }}</span
+          ><span>{{ company.clients }}</span
+          ><span>{{ company.vehicles }}</span
+          ><span>{{ company.invoices }}</span
+          ><span>{{ company.revenue | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE' }}</span
+          ><span>{{ company.outstanding | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE' }}</span
+          ><span class="badge" [class.inactive]="!company.active">{{
+            company.active ? 'Actif' : 'Suspendu'
+          }}</span
+          ><span><i class="pi pi-chevron-right"></i></span>
+        </button>
+      }
+    </div>
+    <app-pagination
+      [totalElements]="data.companies.totalElements"
+      [page]="page()"
+      [pageSize]="pageSize()"
+      (pageChange)="changePage($event)"
+      (pageSizeChange)="changePageSize($event)"
+    />
+  </section>
+}
+@if (detailLoading()) {
+  <div class="backdrop"></div>
+  <div class="floating-loader"><i class="pi pi-spin pi-spinner"></i></div>
+}
+@if (selectedGarage(); as garage) {
+  <div class="backdrop" (click)="closeGarage()"></div>
+  <aside class="garage-drawer">
+    <header>
+      <div>
+        <span class="badge" [class.inactive]="!garage.active">{{
+          garage.active ? 'Compte actif' : 'Compte suspendu'
+        }}</span>
+        <h2>{{ garage.name }}</h2>
+        <p>{{ garage.vatNumber || 'Sans numéro de TVA' }} · {{ garage.address || garage.email }}</p>
+      </div>
+      <button type="button" (click)="closeGarage()"><i class="pi pi-times"></i></button>
+    </header>
+    <div class="drawer-actions">
+      <button class="primary" type="button" (click)="openCreateUser()">
+        <i class="pi pi-user-plus"></i> Ajouter un utilisateur</button
+      ><button class="danger" type="button" (click)="toggleGarage(garage)">
+        {{ garage.active ? 'Suspendre la société' : 'Réactiver la société' }}
+      </button>
+    </div>
+    <section>
+      <div class="section-title">
+        <h3>Utilisateurs</h3>
+        <span>{{ garage.users.length }}</span>
+      </div>
+      <div class="user-list">
+        @for (user of garage.users; track user.id) {
+          <article [class.disabled]="!user.active">
+            <span class="avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+            <div>
+              <b>{{ user.firstName }} {{ user.lastName }}</b
+              ><small>{{ user.email }} · {{ roleLabel(user.role) }}</small>
+            </div>
+            <span class="status-dot" [class.off]="!user.active"></span>
+            @if (user.role !== 'SUPER_ADMIN') {
+              <button type="button" (click)="openEditUser(user)" title="Modifier">
+                <i class="pi pi-pencil"></i></button
+              ><button
+                type="button"
+                (click)="toggleUser(user)"
+                [title]="user.active ? 'Désactiver' : 'Réactiver'"
+              >
+                <i class="pi" [class.pi-ban]="user.active" [class.pi-check]="!user.active"></i>
+              </button>
+            }
+          </article>
+        }
+      </div>
+    </section>
+    <section>
+      <div class="section-title">
+        <h3>Factures récentes</h3>
+        <span>{{ garage.recentInvoices.length }}</span>
+      </div>
+      <div class="invoice-list">
+        @for (invoice of garage.recentInvoices; track invoice.id) {
+          <article>
+            <div>
+              <b>{{ invoice.invoiceNumber }}</b
+              ><small>{{ invoice.clientName }} · {{ invoice.licensePlate }}</small>
+            </div>
+            <span>{{ invoice.issueDate | date: 'dd/MM/yyyy' }}</span
+            ><strong>{{ invoice.total | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</strong
+            ><span class="invoice-status" [attr.data-status]="invoice.status">{{
+              invoiceStatusLabel(invoice.status)
+            }}</span>
+          </article>
+        } @empty {
+          <p>Aucune facture.</p>
+        }
+      </div>
+    </section>
+  </aside>
+}
+@if (userDialogOpen()) {
+  <div class="modal-backdrop"></div>
+  <section class="dialog">
+    <header>
+      <div>
+        <small>Compte utilisateur</small>
+        <h2>{{ selectedUser() ? 'Modifier l’utilisateur' : 'Nouvel utilisateur' }}</h2>
+      </div>
+      <button type="button" (click)="closeUserDialog()"><i class="pi pi-times"></i></button>
+    </header>
+    <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+      <div class="two-columns">
+        <label>Prénom<input formControlName="firstName" /></label
+        ><label>Nom<input formControlName="lastName" /></label>
+      </div>
+      <label>Email<input type="email" formControlName="email" /></label
+      ><label>Téléphone<input formControlName="phone" /></label
+      ><label
+        >Rôle<select formControlName="role">
+          <option value="OWNER">Propriétaire</option>
+          <option value="ADMIN">Administrateur</option>
+          <option value="MECHANIC">Mécanicien</option>
+          <option value="RECEPTION">Réception</option>
+        </select></label
+      ><label
+        >Mot de passe
+        <small>{{
+          selectedUser() ? '(laisser vide pour ne pas le changer)' : '(10 caractères minimum)'
+        }}</small
+        ><input type="password" formControlName="password" autocomplete="new-password"
+      /></label>
+      <footer>
+        <button type="button" class="secondary" (click)="closeUserDialog()">Annuler</button
+        ><button type="submit" class="primary" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+}

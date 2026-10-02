@@ -1,0 +1,79 @@
+<header class="page-header">
+  <div>
+    <h1>Factures</h1>
+    <p>Suivez les montants facturés, les paiements et les soldes restants.</p>
+  </div>
+  <a class="new-invoice" routerLink="/invoices/new">+ Nouvelle facture</a>
+</header>
+
+<section class="toolbar">
+  <label>
+    <i class="pi pi-search"></i>
+    <input
+      #invoiceSearch
+      type="search"
+      placeholder="Numéro, client ou plaque"
+      (input)="state.setSearch(invoiceSearch.value)"
+    />
+  </label>
+  <select #invoiceStatus (change)="state.setStatus(invoiceStatus.value)">
+    <option value="">Tous les statuts</option>
+    <option value="DRAFT">Brouillon</option>
+    <option value="ISSUED">Émise</option>
+    <option value="PARTIALLY_PAID">Partiellement payée</option>
+    <option value="PAID">Payée</option>
+    <option value="OVERDUE">En retard</option>
+    <option value="CANCELLED">Annulée</option>
+  </select>
+</section>
+
+@if (state.loading()) {
+  <p>Chargement…</p>
+}
+@if (state.error()) {
+  <p class="error">{{ state.error() }}</p>
+}
+
+<div class="table">
+  <div class="row head">
+    <span>Numéro</span>
+    <span>Client</span>
+    <span>Véhicule</span>
+    <span>Date</span>
+    <span>Total</span>
+    <span>Payé</span>
+    <span>Solde</span>
+    <span>Statut</span>
+    <span>Action</span>
+  </div>
+
+  @for (invoice of state.invoices(); track invoice.id) {
+    <div class="row">
+      <strong>{{ invoice.invoiceNumber }}</strong>
+      <span>{{ invoice.clientName }}</span>
+      <span class="plate">{{ invoice.licensePlate }}</span>
+      <span>{{ invoice.issueDate | date: 'dd/MM/yyyy' }}</span>
+      <span>{{ invoice.total | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</span>
+      <span>{{ invoice.amountPaid | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</span>
+      <strong>{{ invoice.balanceDue | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</strong>
+      <span class="status" [attr.data-status]="invoice.status">
+        {{ statusLabel(invoice.status) }}
+      </span>
+      <a class="view" [routerLink]="['/invoices', invoice.id]">
+        <i class="pi pi-eye"></i>
+        Voir
+      </a>
+    </div>
+  } @empty {
+    @if (!state.loading()) {
+      <p class="empty">Aucune facture.</p>
+    }
+  }
+  <app-pagination
+    [totalElements]="state.totalElements()"
+    [page]="state.page()"
+    [pageSize]="state.pageSize()"
+    (pageChange)="state.changePage($event)"
+    (pageSizeChange)="state.changePageSize($event)"
+  />
+</div>

@@ -1,0 +1,44 @@
+<div class="pagination" aria-label="Pagination">
+  <div class="result-count">
+    <strong>{{ firstElement }}–{{ lastElement }}</strong> sur
+    <strong>{{ totalElements }}</strong> éléments
+  </div>
+
+  <div class="page-size">
+    <label for="page-size">Éléments par page</label>
+    <select id="page-size" [value]="pageSize" (change)="selectPageSize($event)">
+      @for (option of pageSizeOptions; track option) {
+        <option [value]="option">{{ option }}</option>
+      }
+    </select>
+  </div>
+
+  <nav class="page-buttons" aria-label="Pages">
+    <button
+      type="button"
+      aria-label="Page précédente"
+      [disabled]="page === 0"
+      (click)="selectPage(page - 1)"
+    >
+      <i class="pi pi-chevron-left"></i>
+    </button>
+    @for (pageNumber of visiblePages; track pageNumber) {
+      <button
+        type="button"
+        [class.active]="pageNumber === page"
+        [attr.aria-current]="pageNumber === page ? 'page' : null"
+        (click)="selectPage(pageNumber)"
+      >
+        {{ pageNumber + 1 }}
+      </button>
+    }
+    <button
+      type="button"
+      aria-label="Page suivante"
+      [disabled]="page >= totalPages - 1"
+      (click)="selectPage(page + 1)"
+    >
+      <i class="pi pi-chevron-right"></i>
+    </button>
+  </nav>
+</div>

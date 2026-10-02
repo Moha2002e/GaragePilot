@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+h1 {
+  margin: 0;
+}
+
+.page-header p {
+  margin: 7px 0 0;
+  color: #667085;
+}
+
+.new-invoice {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #167a5b;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.toolbar label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: white;
+  color: #667085;
+}
+
+.toolbar input {
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  outline: 0;
+}
+
+.toolbar select {
+  min-width: 190px;
+  padding: 10px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: white;
+}
+
+.table {
+  overflow-x: auto;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.4fr 0.9fr 0.9fr 0.9fr 0.9fr 0.9fr 0.9fr 0.7fr;
+  min-width: 1150px;
+  padding: 15px 18px;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.head {
+  background: #f9fafb;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.plate {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.status {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status[data-status='PAID'] {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.status[data-status='OVERDUE'] {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.status[data-status='PARTIALLY_PAID'],
+.status[data-status='ISSUED'] {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #167a5b;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.error {
+  color: #b42318;
+}
+
+.empty {
+  padding: 24px;
+  color: #667085;
+}

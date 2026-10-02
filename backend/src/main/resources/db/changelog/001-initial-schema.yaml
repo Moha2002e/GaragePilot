@@ -1,0 +1,75 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-initial-schema
+      author: garagepilot
+      changes:
+        - createTable:
+            tableName: garages
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: name, type: varchar(150), constraints: { nullable: false } }
+              - column: { name: vat_number, type: varchar(32) }
+              - column: { name: email, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: phone, type: varchar(50) }
+              - column: { name: street, type: varchar(255) }
+              - column: { name: city, type: varchar(100) }
+              - column: { name: postal_code, type: varchar(20) }
+              - column: { name: country, type: varchar(2), defaultValue: BE, constraints: { nullable: false } }
+              - column: { name: active, type: boolean, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createTable:
+            tableName: users
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: garage_id, type: uuid, constraints: { nullable: false, foreignKeyName: fk_user_garage, references: garages(id) } }
+              - column: { name: first_name, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: last_name, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: email, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: password_hash, type: varchar(255), constraints: { nullable: false } }
+              - column: { name: phone, type: varchar(50) }
+              - column: { name: role, type: varchar(30), constraints: { nullable: false } }
+              - column: { name: active, type: boolean, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint: { tableName: users, columnNames: garage_id,email, constraintName: uk_users_garage_email }
+        - createTable:
+            tableName: customers
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: garage_id, type: uuid, constraints: { nullable: false, foreignKeyName: fk_customer_garage, references: garages(id) } }
+              - column: { name: type, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: first_name, type: varchar(100) }
+              - column: { name: last_name, type: varchar(100) }
+              - column: { name: company_name, type: varchar(150) }
+              - column: { name: vat_number, type: varchar(32) }
+              - column: { name: email, type: varchar(255) }
+              - column: { name: phone, type: varchar(50) }
+              - column: { name: street, type: varchar(255) }
+              - column: { name: postal_code, type: varchar(20) }
+              - column: { name: city, type: varchar(100) }
+              - column: { name: country, type: varchar(2), defaultValue: BE, constraints: { nullable: false } }
+              - column: { name: notes, type: text }
+              - column: { name: active, type: boolean, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - createTable:
+            tableName: vehicles
+            columns:
+              - column: { name: id, type: uuid, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: garage_id, type: uuid, constraints: { nullable: false, foreignKeyName: fk_vehicle_garage, references: garages(id) } }
+              - column: { name: customer_id, type: uuid, constraints: { nullable: false, foreignKeyName: fk_vehicle_customer, references: customers(id) } }
+              - column: { name: license_plate, type: varchar(20), constraints: { nullable: false } }
+              - column: { name: vin, type: varchar(17) }
+              - column: { name: brand, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: model, type: varchar(100), constraints: { nullable: false } }
+              - column: { name: version, type: varchar(100) }
+              - column: { name: fuel_type, type: varchar(20) }
+              - column: { name: first_registration_date, type: date }
+              - column: { name: mileage, type: bigint }
+              - column: { name: color, type: varchar(50) }
+              - column: { name: notes, type: text }
+              - column: { name: active, type: boolean, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: created_at, type: timestamp with time zone, constraints: { nullable: false } }
+              - column: { name: updated_at, type: timestamp with time zone, constraints: { nullable: false } }
+        - addUniqueConstraint: { tableName: vehicles, columnNames: garage_id,license_plate, constraintName: uk_vehicles_garage_plate }

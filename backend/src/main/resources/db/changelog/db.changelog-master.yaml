@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001-initial-schema.yaml
+  - include:
+      file: db/changelog/002-enable-row-level-security.yaml
+  - include:
+      file: db/changelog/003-rename-customer-to-client.yaml
+  - include:
+      file: db/changelog/004-create-operational-tables.sql
+  - include:
+      file: db/changelog/005-fix-composite-unique-constraints.sql
+  - include:
+      file: db/changelog/006-dashboard-planning-services.sql
+  - include:
+      file: db/changelog/007-default-garage-services.sql

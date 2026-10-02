@@ -1,0 +1,121 @@
+<div class="toolbar">
+  <a routerLink="/invoices"><i class="pi pi-arrow-left"></i> Retour aux factures</a>
+  @if (invoice()) {
+    <div class="toolbar-actions">
+      @if (invoice()?.status === 'DRAFT') {
+        <a class="edit" [routerLink]="['/invoices', invoice()?.id, 'edit']">
+          <i class="pi pi-pencil"></i>
+          Modifier
+        </a>
+      }
+      <button type="button" (click)="downloadPdf()" [disabled]="downloading()">
+        <i class="pi pi-download"></i>
+        {{ downloading() ? 'Téléchargement…' : 'Télécharger le PDF' }}
+      </button>
+    </div>
+  }
+</div>
+
+@if (loading()) {
+  <p>Chargement de la facture…</p>
+}
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+
+@if (invoice(); as current) {
+  <article class="invoice-sheet">
+    <header>
+      <div class="garage-brand">
+        <span class="logo"><i class="pi pi-car"></i></span>
+        <div>
+          <h1>{{ current.garageName }}</h1>
+          <p>Gestion automobile</p>
+        </div>
+      </div>
+      <div class="invoice-title">
+        <strong>FACTURE</strong>
+        <span>{{ current.invoiceNumber }}</span>
+      </div>
+    </header>
+
+    <section class="parties">
+      <div class="info-card">
+        <small>GARAGE</small>
+        <strong>{{ current.garageName }}</strong>
+        <span>{{ current.garageAddress || '—' }}</span>
+        <span>TVA : {{ current.garageVatNumber || '—' }}</span>
+        <span>{{ current.garageEmail }}</span>
+        <span>{{ current.garagePhone || '—' }}</span>
+      </div>
+      <div class="info-card">
+        <small>FACTURÉ À</small>
+        <strong>{{ current.clientName }}</strong>
+        <span>{{ current.clientAddress || '—' }}</span>
+        @if (current.clientVatNumber) {
+          <span>TVA : {{ current.clientVatNumber }}</span>
+        }
+        <span>{{ current.clientEmail || '—' }}</span>
+        <span>{{ current.clientPhone || '—' }}</span>
+      </div>
+    </section>
+
+    <section class="metadata">
+      <div>
+        <small>DATE</small><strong>{{ current.issueDate | date: 'dd/MM/yyyy' }}</strong>
+      </div>
+      <div>
+        <small>ÉCHÉANCE</small><strong>{{ current.dueDate | date: 'dd/MM/yyyy' }}</strong>
+      </div>
+      <div>
+        <small>VÉHICULE</small><strong>{{ current.vehicleDescription }}</strong>
+      </div>
+      <div>
+        <small>PLAQUE</small><strong>{{ current.licensePlate }}</strong>
+      </div>
+      <div>
+        <small>VIN</small><strong>{{ current.vin || '—' }}</strong>
+      </div>
+      <div>
+        <small>KILOMÉTRAGE</small>
+        <strong>{{ current.mileage ? current.mileage + ' km' : '—' }}</strong>
+      </div>
+    </section>
+
+    <div class="lines">
+      <div class="line header-line">
+        <span>Description</span><span>Qté</span><span>Prix unit.</span><span>TVA</span
+        ><span>Montant</span>
+      </div>
+      @for (item of current.items; track item.id) {
+        <div class="line">
+          <strong>{{ item.description }}</strong>
+          <span>{{ item.quantity }}</span>
+          <span>{{ item.unitPrice | currency: 'EUR' }}</span>
+          <span>{{ item.vatRate }} %</span>
+          <strong>{{ item.totalExcludingVat | currency: 'EUR' }}</strong>
+        </div>
+      }
+    </div>
+
+    <section class="summary">
+      <div>
+        <span>Sous-total</span><strong>{{ current.subtotal | currency: 'EUR' }}</strong>
+      </div>
+      <div>
+        <span>TVA</span><strong>{{ current.vatAmount | currency: 'EUR' }}</strong>
+      </div>
+      <div class="total">
+        <span>Total TTC</span><strong>{{ current.total | currency: 'EUR' }}</strong>
+      </div>
+      <div>
+        <span>Déjà payé</span><strong>{{ current.amountPaid | currency: 'EUR' }}</strong>
+      </div>
+      <div class="balance">
+        <span>Solde dû</span><strong>{{ current.balanceDue | currency: 'EUR' }}</strong>
+      </div>
+    </section>
+
+    <footer>Merci pour votre confiance. Mentionnez le numéro de facture lors du paiement.</footer>
+  </article>
+}

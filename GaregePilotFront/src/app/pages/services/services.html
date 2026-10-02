@@ -1,0 +1,136 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">Catalogue atelier</span>
+    <h1>Prestations</h1>
+    <p>Centralisez les services, durées et tarifs utilisés par le garage.</p>
+  </div>
+  <button class="primary" type="button" (click)="openCreate()">
+    <i class="pi pi-plus"></i> Nouvelle prestation
+  </button>
+</header>
+
+<section class="summary">
+  <article>
+    <small>Prestations actives</small><strong>{{ services().length }}</strong>
+  </article>
+  <article>
+    <small>Durée moyenne</small><strong>{{ averageDuration() | number: '1.0-0' }} min</strong>
+  </article>
+  <article>
+    <small>Prix moyen HTVA</small
+    ><strong>{{
+      averagePrice() === null
+        ? '—'
+        : (averagePrice() | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE')
+    }}</strong>
+  </article>
+</section>
+
+<section class="toolbar">
+  <label class="search"
+    ><i class="pi pi-search"></i
+    ><input
+      #searchInput
+      type="search"
+      placeholder="Rechercher une prestation"
+      (input)="setSearch(searchInput.value)"
+  /></label>
+  <select #category (change)="setCategory($any(category.value))">
+    <option value="ALL">Toutes les catégories</option>
+    <option value="MAINTENANCE">Entretien</option>
+    <option value="MECHANICAL">Mécanique</option>
+    <option value="TIRES">Pneumatiques</option>
+    <option value="DIAGNOSTIC">Diagnostic</option>
+    <option value="BODYWORK">Carrosserie</option>
+    <option value="ELECTRICAL">Électricité</option>
+    <option value="OTHER">Autre</option>
+  </select>
+</section>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+@if (loading()) {
+  <div class="state"><i class="pi pi-spin pi-spinner"></i> Chargement…</div>
+} @else {
+  <section class="service-grid">
+    @for (service of services(); track service.id) {
+      <article class="service-card">
+        <div class="card-head">
+          <span class="service-icon" [style.background]="service.color || '#087a55'"
+            ><i class="pi pi-wrench"></i></span
+          ><span class="category">{{ categoryLabel(service.category) }}</span
+          ><button type="button" (click)="openEdit(service)" aria-label="Modifier">
+            <i class="pi pi-pencil"></i>
+          </button>
+        </div>
+        <h2>{{ service.name }}</h2>
+        <p>{{ service.description || 'Aucune description renseignée.' }}</p>
+        <div class="details">
+          <span><i class="pi pi-clock"></i> {{ durationLabel(service.durationMinutes) }}</span
+          ><strong
+            >{{ service.price | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}
+            <small>HTVA</small></strong
+          >
+        </div>
+        <footer>
+          <span>TVA {{ service.vatRate | number: '1.0-2' }} %</span
+          ><button type="button" (click)="deactivate(service)">
+            <i class="pi pi-ban"></i> Désactiver
+          </button>
+        </footer>
+      </article>
+    } @empty {
+      <div class="state">Aucune prestation ne correspond à vos critères.</div>
+    }
+  </section>
+}
+
+@if (dialogOpen()) {
+  <div class="backdrop" (click)="closeDialog()"></div>
+  <section class="dialog" role="dialog" aria-modal="true">
+    <header>
+      <div>
+        <small>Catalogue</small>
+        <h2>{{ selected() ? 'Modifier la prestation' : 'Nouvelle prestation' }}</h2>
+      </div>
+      <button type="button" (click)="closeDialog()"><i class="pi pi-times"></i></button>
+    </header>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label>Nom<input formControlName="name" placeholder="Ex. Entretien annuel" /></label>
+      <label
+        >Catégorie<select formControlName="category">
+          <option value="MAINTENANCE">Entretien</option>
+          <option value="MECHANICAL">Mécanique</option>
+          <option value="TIRES">Pneumatiques</option>
+          <option value="DIAGNOSTIC">Diagnostic</option>
+          <option value="BODYWORK">Carrosserie</option>
+          <option value="ELECTRICAL">Électricité</option>
+          <option value="OTHER">Autre</option>
+        </select></label
+      >
+      <label>Description<textarea formControlName="description" rows="3"></textarea></label>
+      <div class="two-columns">
+        <label
+          >Durée (minutes)<input type="number" formControlName="durationMinutes" min="1" /></label
+        ><label>Prix HTVA<input type="number" formControlName="price" min="0" step="0.01" /></label>
+      </div>
+      <div class="two-columns">
+        <label
+          >TVA (%)<select formControlName="vatRate">
+            <option [value]="0">0 %</option>
+            <option [value]="6">6 %</option>
+            <option [value]="12">12 %</option>
+            <option [value]="21">21 %</option>
+          </select></label
+        ><label>Couleur<input class="color" type="color" formControlName="color" /></label>
+      </div>
+      <footer>
+        <button class="secondary" type="button" (click)="closeDialog()">Annuler</button
+        ><button class="primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </footer>
+    </form>
+  </section>
+}

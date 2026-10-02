@@ -1,0 +1,48 @@
+<header class="page-header">
+  <div>
+    <h1>Clients</h1>
+    <p>Coordonnées et historique de vos clients.</p>
+  </div>
+  <button type="button">+ Nouveau client</button>
+</header>
+<section class="toolbar">
+  <label>
+    <i class="pi pi-search"></i>
+    <input
+      #clientSearch
+      type="search"
+      placeholder="Nom, société, email, téléphone ou ville"
+      (input)="state.setSearch(clientSearch.value)"
+    />
+  </label>
+</section>
+@if (state.loading()) {
+  <p>Chargement…</p>
+}
+@if (state.error()) {
+  <p class="error">{{ state.error() }}</p>
+}
+<div class="table">
+  <div class="row head">
+    <span>Nom</span><span>Téléphone</span><span>Email</span><span>Ville</span>
+  </div>
+  @for (client of state.clients(); track client.id) {
+    <div class="row">
+      <strong>{{ client.companyName || client.firstName + ' ' + client.lastName }}</strong
+      ><span>{{ client.phone || '—' }}</span
+      ><span>{{ client.email || '—' }}</span
+      ><span>{{ client.city || '—' }}</span>
+    </div>
+  } @empty {
+    @if (!state.loading()) {
+      <p class="empty">Aucun client.</p>
+    }
+  }
+  <app-pagination
+    [totalElements]="state.totalElements()"
+    [page]="state.page()"
+    [pageSize]="state.pageSize()"
+    (pageChange)="state.changePage($event)"
+    (pageSizeChange)="state.changePageSize($event)"
+  />
+</div>

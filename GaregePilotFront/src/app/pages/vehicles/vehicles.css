@@ -1,0 +1,64 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  margin: 0;
+}
+.page-header p {
+  color: #667085;
+}
+.page-header button {
+  background: #16a36b;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 15px;
+}
+.toolbar {
+  margin-bottom: 16px;
+}
+.toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: white;
+  color: #667085;
+}
+.toolbar input {
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  outline: 0;
+}
+.table {
+  background: white;
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eaecf0;
+}
+.head {
+  background: #f9fafb;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+.empty {
+  padding: 20px;
+  color: #667085;
+}
+.error {
+  color: #b42318;
+}

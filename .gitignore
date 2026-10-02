@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+backend/target/
+GaregePilotFront/node_modules/
+GaregePilotFront/dist/
+GaregePilotFront/.angular/
+.idea/
+*.iml
+tmp/
+output/
+.claude/

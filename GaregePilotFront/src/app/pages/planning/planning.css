@@ -1,0 +1,197 @@
+:host {
+  display: block;
+}
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.eyebrow {
+  color: #087a55;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+h1 {
+  margin: 5px 0;
+  font-size: 30px;
+}
+.page-heading p {
+  margin: 0;
+  color: #667085;
+}
+.primary,
+.secondary {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary {
+  background: #087a55;
+  color: white;
+}
+.secondary {
+  color: #344054;
+  background: white;
+  border: 1px solid #d0d5dd;
+}
+.calendar-card {
+  position: relative;
+  background: white;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  padding: 18px;
+  overflow: hidden;
+}
+.calendar-card.is-loading {
+  opacity: 0.72;
+}
+.loading {
+  position: absolute;
+  z-index: 2;
+  right: 25px;
+  top: 25px;
+  color: #087a55;
+}
+.alert {
+  margin-bottom: 14px;
+  padding: 12px 15px;
+  color: #b42318;
+  background: #fef3f2;
+  border-radius: 9px;
+}
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgb(16 24 40 / 45%);
+}
+.editor {
+  position: fixed;
+  z-index: 21;
+  top: 0;
+  right: 0;
+  width: min(520px, 100%);
+  height: 100vh;
+  overflow-y: auto;
+  background: white;
+  box-shadow: -18px 0 35px rgb(16 24 40 / 15%);
+  padding: 25px;
+}
+.editor header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e4e7ec;
+}
+.editor header small {
+  color: #087a55;
+  font-weight: 700;
+}
+.editor h2 {
+  margin: 5px 0 0;
+}
+.editor header button {
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+.editor form {
+  display: grid;
+  gap: 17px;
+  padding-top: 22px;
+}
+.editor label {
+  display: grid;
+  gap: 7px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+.editor input,
+.editor select,
+.editor textarea {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: white;
+  color: #101828;
+  font: inherit;
+}
+.editor textarea {
+  resize: vertical;
+}
+.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.editor footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+}
+.editor button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+:host ::ng-deep .fc {
+  font-family: inherit;
+  color: #344054;
+  --fc-classic-button: #101828;
+  --fc-classic-button-border: #101828;
+  --fc-classic-button-strong: #087a55;
+  --fc-classic-button-strong-border: #087a55;
+  --fc-classic-primary: #087a55;
+  --fc-classic-border: #e4e7ec;
+  --fc-classic-today: #ecfdf3;
+}
+:host ::ng-deep .fc .fc-toolbar-title {
+  font-size: 18px;
+}
+:host ::ng-deep .fc .fc-button-primary {
+  background: #101828;
+  border-color: #101828;
+}
+:host ::ng-deep .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background: #087a55;
+  border-color: #087a55;
+}
+:host ::ng-deep .fc-theme-standard td,
+:host ::ng-deep .fc-theme-standard th {
+  border-color: #e4e7ec;
+}
+:host ::ng-deep .fc-event {
+  border-radius: 5px;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+@media (max-width: 750px) {
+  .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .page-heading .primary {
+    align-self: start;
+  }
+  .calendar-card {
+    padding: 10px;
+    overflow-x: auto;
+  }
+  .calendar-card full-calendar {
+    display: block;
+    min-width: 720px;
+  }
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
+}

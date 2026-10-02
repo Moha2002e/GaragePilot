@@ -1,0 +1,244 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">Organisation atelier</span>
+    <h1>Atelier</h1>
+    <p>Suivez les véhicules, les travaux et l’avancement des interventions.</p>
+  </div>
+  <button class="primary" type="button" (click)="openCreate()">
+    <i class="pi pi-plus"></i> Nouvelle intervention
+  </button>
+</header>
+
+<section class="toolbar">
+  <label class="search-field">
+    <i class="pi pi-search"></i>
+    <input
+      #workOrderSearch
+      type="search"
+      placeholder="Plaque, client ou intervention"
+      (input)="setSearch(workOrderSearch.value)"
+    />
+  </label>
+  <select #workOrderStatus (change)="setStatusFilter(workOrderStatus.value)">
+    <option value="">Tous les statuts</option>
+    <option value="DRAFT">Brouillon</option>
+    <option value="WAITING_FOR_APPROVAL">Accord client</option>
+    <option value="APPROVED">Approuvée</option>
+    <option value="IN_PROGRESS">En cours</option>
+    <option value="WAITING_FOR_PARTS">Attente pièces</option>
+    <option value="COMPLETED">Terminée</option>
+    <option value="INVOICED">Facturée</option>
+    <option value="CANCELLED">Annulée</option>
+  </select>
+</section>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="table-panel">
+  <div class="table-row table-head">
+    <span>Véhicule</span><span>Client</span><span>Intervention</span><span>Entrée</span
+    ><span>Total</span><span>Statut</span><span>Actions</span>
+  </div>
+  @if (loading()) {
+    <div class="state"><i class="pi pi-spin pi-spinner"></i> Chargement…</div>
+  } @else {
+    @for (workOrder of workOrders(); track workOrder.id) {
+      <article class="table-row">
+        <span
+          ><b class="plate">{{ workOrder.licensePlate }}</b
+          ><small>{{ workOrder.vehicleDescription }}</small></span
+        >
+        <span>{{ workOrder.clientName }}</span>
+        <span class="description">{{ workOrder.description }}</span>
+        <span
+          >{{ workOrder.createdAt | date: 'dd/MM/yyyy'
+          }}<small>{{
+            workOrder.mileageIn == null ? 'Kilométrage non renseigné' : workOrder.mileageIn + ' km'
+          }}</small></span
+        >
+        <strong>{{ workOrder.total | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</strong>
+        <span class="status" [attr.data-status]="workOrder.status">{{
+          statusLabel(workOrder.status)
+        }}</span>
+        <div class="actions">
+          @if (canEdit(workOrder)) {
+            <button type="button" title="Modifier" (click)="openEdit(workOrder)">
+              <i class="pi pi-pencil"></i>
+            </button>
+          }
+          @if (workOrder.status === 'DRAFT' || workOrder.status === 'APPROVED') {
+            <button
+              class="start"
+              type="button"
+              title="Démarrer"
+              (click)="changeStatus(workOrder, 'IN_PROGRESS')"
+            >
+              <i class="pi pi-play"></i>
+            </button>
+          }
+          @if (workOrder.status === 'IN_PROGRESS') {
+            <button
+              type="button"
+              title="Attente pièces"
+              (click)="changeStatus(workOrder, 'WAITING_FOR_PARTS')"
+            >
+              <i class="pi pi-pause"></i>
+            </button>
+            <button
+              class="complete"
+              type="button"
+              title="Terminer"
+              (click)="changeStatus(workOrder, 'COMPLETED')"
+            >
+              <i class="pi pi-check"></i>
+            </button>
+          }
+          @if (workOrder.status === 'WAITING_FOR_PARTS') {
+            <button
+              class="start"
+              type="button"
+              title="Reprendre"
+              (click)="changeStatus(workOrder, 'IN_PROGRESS')"
+            >
+              <i class="pi pi-play"></i>
+            </button>
+          }
+        </div>
+      </article>
+    } @empty {
+      <div class="state">Aucune intervention enregistrée.</div>
+    }
+  }
+  <app-pagination
+    [totalElements]="totalElements()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    (pageChange)="changePage($event)"
+    (pageSizeChange)="changePageSize($event)"
+  />
+</section>
+
+@if (drawerOpen()) {
+  <div class="backdrop" (click)="closeDrawer()"></div>
+  <aside class="drawer" role="dialog" aria-modal="true">
+    <header>
+      <div>
+        <small>Ordre de travail</small>
+        <h2>{{ selected() ? 'Modifier l’intervention' : 'Nouvelle intervention' }}</h2>
+      </div>
+      <button type="button" aria-label="Fermer" (click)="closeDrawer()">
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <section class="form-section">
+        <h3>Véhicule et réception</h3>
+        <label
+          >Rechercher le véhicule
+          <input
+            #drawerVehicleSearch
+            type="search"
+            placeholder="Plaque, VIN, marque ou modèle"
+            (input)="searchVehicles(drawerVehicleSearch.value)"
+          />
+        </label>
+        <label
+          >Véhicule
+          <select
+            formControlName="vehicleId"
+            #vehicleSelect
+            (change)="vehicleChanged(vehicleSelect.value)"
+          >
+            <option value="">Sélectionner un véhicule</option>
+            @for (vehicle of vehicles(); track vehicle.id) {
+              <option [value]="vehicle.id">
+                {{ vehicle.licensePlate }} — {{ vehicle.brand }} {{ vehicle.model }}
+              </option>
+            }
+          </select>
+        </label>
+        <div class="two-columns">
+          <label
+            >Kilométrage entrée<input type="number" min="0" formControlName="mileageIn"
+          /></label>
+          <label
+            >Kilométrage sortie<input type="number" min="0" formControlName="mileageOut"
+          /></label>
+        </div>
+        <label>Travaux demandés<textarea formControlName="description" rows="3"></textarea></label>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <div>
+            <h3>Travaux, pièces et main-d’œuvre</h3>
+            <small>Montants hors TVA</small>
+          </div>
+          <button type="button" class="secondary compact" (click)="addItem()">
+            <i class="pi pi-plus"></i> Ajouter une ligne
+          </button>
+        </div>
+        <div class="items" formArrayName="items">
+          @for (item of items.controls; track item; let index = $index) {
+            <div class="item" [formGroupName]="index">
+              <select formControlName="type" aria-label="Type de ligne">
+                @for (type of ['SERVICE', 'PART', 'LABOR', 'OTHER']; track type) {
+                  <option [value]="type">{{ itemTypeLabel($any(type)) }}</option>
+                }
+              </select>
+              <input formControlName="description" placeholder="Description" />
+              <input type="number" formControlName="quantity" min="0.01" step="0.01" />
+              <input type="number" formControlName="unitPrice" min="0" step="0.01" />
+              <select formControlName="vatRate" aria-label="TVA">
+                <option [value]="0">0 %</option>
+                <option [value]="6">6 %</option>
+                <option [value]="12">12 %</option>
+                <option [value]="21">21 %</option>
+              </select>
+              <button
+                type="button"
+                class="remove"
+                aria-label="Supprimer la ligne"
+                [disabled]="items.length === 1"
+                (click)="removeItem(index)"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          }
+        </div>
+        <div class="item-legend">
+          <span>Type</span><span>Description</span><span>Quantité</span><span>Prix unitaire</span
+          ><span>TVA</span><span></span>
+        </div>
+        <div class="totals">
+          <span
+            >Sous-total
+            <b>{{ subtotal() | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</b></span
+          >
+          <span
+            >TVA <b>{{ vatAmount() | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</b></span
+          >
+          <strong>Total {{ total() | currency: 'EUR' : 'symbol' : '1.2-2' : 'fr-BE' }}</strong>
+        </div>
+      </section>
+
+      <section class="form-section two-columns">
+        <label
+          >Notes technicien<textarea formControlName="technicianNotes" rows="4"></textarea>
+        </label>
+        <label>Notes client<textarea formControlName="customerNotes" rows="4"></textarea></label>
+      </section>
+
+      <footer>
+        <button class="secondary" type="button" (click)="closeDrawer()">Annuler</button>
+        <button class="primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer l’intervention' }}
+        </button>
+      </footer>
+    </form>
+  </aside>
+}

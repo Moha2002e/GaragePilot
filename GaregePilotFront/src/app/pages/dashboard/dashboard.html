@@ -1,0 +1,159 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">Vue d’ensemble</span>
+    <h1>Pilotage du garage</h1>
+    <p>Les indicateurs commerciaux, financiers et opérationnels en un seul écran.</p>
+  </div>
+  <div class="actions">
+    <a class="secondary" routerLink="/services"><i class="pi pi-list"></i> Prestations</a>
+    <a class="primary" routerLink="/planning"><i class="pi pi-plus"></i> Rendez-vous</a>
+  </div>
+</header>
+
+@if (loading()) {
+  <div class="state-card"><i class="pi pi-spin pi-spinner"></i> Chargement des indicateurs…</div>
+} @else if (error()) {
+  <div class="state-card error">{{ error() }}</div>
+} @else if (data(); as dashboard) {
+  <section class="kpis" aria-label="Indicateurs principaux">
+    <article>
+      <span class="icon green"><i class="pi pi-calendar"></i></span>
+      <div>
+        <small>Rendez-vous aujourd’hui</small><strong>{{ dashboard.appointmentsToday }}</strong>
+      </div>
+    </article>
+    <article>
+      <span class="icon blue"><i class="pi pi-wrench"></i></span>
+      <div>
+        <small>Véhicules en atelier</small><strong>{{ dashboard.vehiclesInWorkshop }}</strong>
+      </div>
+    </article>
+    <article>
+      <span class="icon amber"><i class="pi pi-file-edit"></i></span>
+      <div>
+        <small>Devis à valider</small><strong>{{ dashboard.quotesWaitingApproval }}</strong>
+      </div>
+    </article>
+    <article>
+      <span class="icon red"><i class="pi pi-exclamation-circle"></i></span>
+      <div>
+        <small>Factures impayées</small><strong>{{ dashboard.unpaidInvoices }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <section class="finance-strip">
+    <div>
+      <small>Chiffre d’affaires du mois</small>
+      <strong>{{
+        dashboard.revenueThisMonth | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE'
+      }}</strong>
+      <span [class.negative]="dashboard.revenueChangePercent < 0">
+        <i
+          class="pi"
+          [class.pi-arrow-up]="dashboard.revenueChangePercent >= 0"
+          [class.pi-arrow-down]="dashboard.revenueChangePercent < 0"
+        ></i>
+        {{ dashboard.revenueChangePercent | number: '1.0-1' }} % vs mois précédent
+      </span>
+    </div>
+    <div>
+      <small>Créances à encaisser</small>
+      <strong>{{
+        dashboard.outstandingTotal | currency: 'EUR' : 'symbol' : '1.0-0' : 'fr-BE'
+      }}</strong>
+      <span>Solde total des factures ouvertes</span>
+    </div>
+  </section>
+
+  <section class="analytics-grid">
+    <article class="chart-card revenue-chart">
+      <header>
+        <div>
+          <h2>Facturation et encaissements</h2>
+          <p>Évolution sur les six derniers mois</p>
+        </div>
+        <span class="legend"><i></i> Facturé <i></i> Encaissé</span>
+      </header>
+      <div class="columns">
+        @for (month of dashboard.monthlyFinancials; track month.month) {
+          <div class="month-column">
+            <div class="bars" [attr.title]="month.month + ' — ' + month.invoiced + ' € facturés'">
+              <span class="invoiced" [style.height.%]="barHeight(month.invoiced)"></span>
+              <span class="collected" [style.height.%]="barHeight(month.collected)"></span>
+            </div>
+            <small>{{ month.month }}</small>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="chart-card invoice-chart">
+      <header>
+        <div>
+          <h2>Statut des factures</h2>
+          <p>Répartition du portefeuille</p>
+        </div>
+      </header>
+      <div class="status-list">
+        @for (item of dashboard.invoiceStatuses; track item.status) {
+          <div>
+            <span class="status-dot" [attr.data-status]="item.status"></span>
+            <span>{{ statusLabel(item.status) }}</span>
+            <b>{{ item.count }}</b>
+            <small>{{ invoicePercent(item) | number: '1.0-0' }} %</small>
+          </div>
+        } @empty {
+          <p class="empty">Aucune facture disponible.</p>
+        }
+      </div>
+    </article>
+
+    <article class="chart-card pipeline-chart">
+      <header>
+        <div>
+          <h2>Flux atelier</h2>
+          <p>Interventions par étape</p>
+        </div>
+      </header>
+      <div class="pipeline">
+        @for (item of dashboard.workshopPipeline; track item.status) {
+          <div class="pipeline-row">
+            <span>{{ statusLabel(item.status) }}</span>
+            <div><i [style.width.%]="pipelineWidth(item.count)"></i></div>
+            <b>{{ item.count }}</b>
+          </div>
+        } @empty {
+          <p class="empty">Aucune intervention en cours.</p>
+        }
+      </div>
+    </article>
+
+    <article class="chart-card collection-chart">
+      <header>
+        <div>
+          <h2>Performance d’encaissement</h2>
+          <p>Encaissé par rapport au montant facturé</p>
+        </div>
+      </header>
+      <div class="collection-months">
+        @for (month of dashboard.monthlyFinancials; track month.month) {
+          <div>
+            <span>{{ month.month }}</span>
+            <div>
+              <i
+                [style.width.%]="month.invoiced ? (month.collected / month.invoiced) * 100 : 0"
+              ></i>
+            </div>
+            <b
+              >{{
+                month.invoiced ? ((month.collected / month.invoiced) * 100 | number: '1.0-0') : 0
+              }}
+              %</b
+            >
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+}

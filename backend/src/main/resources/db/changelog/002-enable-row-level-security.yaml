@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-enable-row-level-security
+      author: garagepilot
+      dbms: postgresql
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE garages ENABLE ROW LEVEL SECURITY;
+              ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+              ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+              ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;

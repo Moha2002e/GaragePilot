@@ -1,0 +1,112 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">Organisation atelier</span>
+    <h1>Planning</h1>
+    <p>Visualisez les rendez-vous et les prestations à réaliser.</p>
+  </div>
+  <button class="primary" type="button" (click)="openEmpty()">
+    <i class="pi pi-plus"></i> Nouveau rendez-vous
+  </button>
+</header>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+<section class="calendar-card" [class.is-loading]="loading()">
+  @if (loading()) {
+    <span class="loading"><i class="pi pi-spin pi-spinner"></i></span>
+  }
+  <full-calendar [options]="calendarOptions" />
+</section>
+
+@if (panelOpen()) {
+  <div class="backdrop" (click)="closePanel()"></div>
+  <aside class="editor" aria-label="Édition du rendez-vous">
+    <header>
+      <div>
+        <small>Planning</small>
+        <h2>{{ selectedAppointment() ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous' }}</h2>
+      </div>
+      <button type="button" (click)="closePanel()" aria-label="Fermer">
+        <i class="pi pi-times"></i>
+      </button>
+    </header>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label
+        >Client
+        <input
+          type="search"
+          placeholder="Rechercher par nom, email ou téléphone"
+          (input)="searchClients($any($event.target).value)"
+        />
+        <select formControlName="clientId" (change)="clientChanged()">
+          <option value="">Sélectionner un client</option>
+          @for (client of clients(); track client.id) {
+            <option [value]="client.id">{{ clientName(client) }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Véhicule
+        <input
+          type="search"
+          placeholder="Rechercher par plaque, VIN ou modèle"
+          [disabled]="!form.controls.clientId.value"
+          (input)="searchVehicles($any($event.target).value)"
+        />
+        <select formControlName="vehicleId">
+          <option value="">Sélectionner un véhicule</option>
+          @for (vehicle of availableVehicles(); track vehicle.id) {
+            <option [value]="vehicle.id">
+              {{ vehicle.licensePlate }} — {{ vehicle.brand }} {{ vehicle.model }}
+            </option>
+          }
+        </select>
+      </label>
+      <label
+        >Prestation du catalogue
+        <select formControlName="serviceId" (change)="serviceChanged()">
+          <option value="">Choisir ou encoder librement</option>
+          @for (service of services(); track service.id) {
+            <option [value]="service.id">
+              {{ service.name }} · {{ service.durationMinutes }} min
+            </option>
+          }
+        </select>
+      </label>
+      <label
+        >Travaux prévus<input
+          formControlName="reason"
+          placeholder="Ex. Entretien annuel et contrôle des freins"
+      /></label>
+      <div class="two-columns">
+        <label>Début<input type="datetime-local" formControlName="startDateTime" /></label>
+        <label>Fin<input type="datetime-local" formControlName="endDateTime" /></label>
+      </div>
+      <label
+        >Statut
+        <select formControlName="status">
+          @for (
+            status of ['PLANNED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'];
+            track status
+          ) {
+            <option [value]="status">{{ statusLabel($any(status)) }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Notes<textarea
+          formControlName="notes"
+          rows="4"
+          placeholder="Informations utiles pour la réception ou le mécanicien"
+        ></textarea>
+      </label>
+      <footer>
+        <button class="secondary" type="button" (click)="closePanel()">Annuler</button
+        ><button class="primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
+      </footer>
+    </form>
+  </aside>
+}

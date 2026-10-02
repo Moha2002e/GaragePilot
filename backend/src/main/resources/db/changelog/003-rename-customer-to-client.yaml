@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-rename-customer-to-client
+      author: garagepilot
+      changes:
+        - renameTable:
+            oldTableName: customers
+            newTableName: clients
+        - renameColumn:
+            tableName: vehicles
+            oldColumnName: customer_id
+            newColumnName: client_id
+            columnDataType: uuid

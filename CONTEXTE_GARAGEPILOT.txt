@@ -1,0 +1,721 @@
+GARAGEPILOT - CONTEXTE COMPLET DU PROJET
+========================================
+
+Dernière mise à jour : 29 septembre 2026
+Emplacement du projet : C:\Users\pasch\Documents\GaragePilot
+
+
+1. UTILISATION DE CE FICHIER
+----------------------------
+
+Ce document sert de transmission entre plusieurs discussions ou développeurs.
+Il décrit l'objectif, les décisions, l'architecture, les fonctionnalités déjà
+réalisées, les données de démonstration, les commandes et les prochaines étapes.
+
+Dans une nouvelle discussion, transmettre ce fichier et demander à l'assistant :
+
+« Lis entièrement CONTEXTE_GARAGEPILOT.txt, puis analyse les fichiers réels du
+projet avant toute modification. Continue le développement sans supprimer les
+éléments existants et respecte l'architecture décrite dans ce document. »
+
+Ce fichier ne contient volontairement aucun mot de passe Supabase, secret JWT
+ou autre secret de production. Ces valeurs restent uniquement dans le fichier
+.env local, qui ne doit jamais être envoyé sur Git.
+
+
+2. OBJECTIF DU PRODUIT
+----------------------
+
+GaragePilot est un SaaS de gestion destiné aux petits garages automobiles
+indépendants en Belgique.
+
+Promesse produit :
+
+« Toute la gestion du garage, de l'entrée du véhicule jusqu'au paiement, sans
+encoder plusieurs fois les mêmes informations. »
+
+Parcours final attendu :
+
+Création du garage
+  -> connexion
+  -> création du client
+  -> ajout du véhicule
+  -> création du rendez-vous
+  -> création de l'intervention
+  -> ajout des travaux, pièces et heures
+  -> création du devis
+  -> acceptation ou refus du devis
+  -> fin de l'intervention
+  -> création de la facture
+  -> ajout des paiements
+  -> facture payée
+
+GaragePilot doit rester simple, rapide, lisible sur ordinateur et tablette,
+et utilisable sur téléphone pour les actions d'atelier essentielles.
+
+
+3. PÉRIMÈTRE FONCTIONNEL VISÉ
+-----------------------------
+
+Le MVP doit gérer :
+
+- les garages ;
+- les utilisateurs et leurs rôles ;
+- l'authentification JWT ;
+- les clients ;
+- les véhicules ;
+- les rendez-vous et le planning ;
+- les interventions et ordres de réparation ;
+- les travaux, les pièces et la main-d'œuvre ;
+- les devis et leur acceptation/refus ;
+- les factures ;
+- les paiements ;
+- les photos d'intervention ;
+- l'historique complet du véhicule ;
+- les rappels et notifications ;
+- le dashboard.
+
+Fonctionnalités prévues après validation du MVP :
+
+- Car-Pass réel ;
+- Peppol réel via un prestataire certifié ;
+- dictée vocale et structuration par IA ;
+- lecture automatique de documents ;
+- SMS ;
+- stock avancé ;
+- fournisseurs ;
+- intégrations comptables ;
+- statistiques avancées.
+
+Ne jamais inventer d'API Car-Pass ou Peppol. Préparer des interfaces propres,
+puis connecter plus tard une documentation ou un prestataire réel.
+
+
+4. PRINCIPES D'ARCHITECTURE
+---------------------------
+
+GaragePilot commence comme un monolithe modulaire. Il ne faut pas introduire de
+microservices, Kafka, CQRS ou Event Sourcing sans nécessité réelle.
+
+Le backend est organisé par couches globales, conformément au choix du
+propriétaire du projet :
+
+backend/src/main/java/be/garagepilot/
+  controller/   contrôleurs REST uniquement
+  service/      logique métier
+  repository/   accès JPA aux données
+  model/        toutes les entités et énumérations métier
+  dto/          objets d'entrée et de sortie de l'API
+  mapper/       conversion entités vers DTO
+  security/     JWT et utilisateur connecté
+  config/       configuration Spring/Security
+  exception/    exceptions et gestion globale des erreurs
+
+Exemples : ClientController, ClientService, ClientRepository, Client et les DTO
+ClientRequest/ClientResponse. La même structure doit être respectée pour les
+véhicules, factures, rendez-vous, atelier, devis et futurs modules.
+
+Le nom métier retenu dans le code est « Client », et non « Customer ».
+
+Le frontend est organisé avec :
+
+GaregePilotFront/src/app/
+  core/models/       modèles TypeScript partagés
+  core/services/     appels API partagés
+  core/guards/       protection des routes
+  core/interceptors/ ajout automatique du JWT
+  layout/            structure sidebar/topbar/contenu
+  pages/             un dossier autonome par page
+
+Chaque page possède son propre dossier et, si nécessaire, ses fichiers :
+
+pages/dashboard/dashboard.ts
+pages/dashboard/dashboard.html
+pages/dashboard/dashboard.css
+
+Le même principe est appliqué à clients, vehicles, invoices, invoice-detail,
+login et aux futures pages planning, atelier, devis et paramètres.
+
+Remarque : le dossier frontend s'appelle actuellement « GaregePilotFront »
+(avec cette orthographe). Les configurations Docker et les commandes utilisent
+ce nom. Ne pas le renommer partiellement sans mettre à jour toutes les références.
+
+
+5. STACK TECHNIQUE ACTUELLE
+---------------------------
+
+Backend :
+
+- Java 17 ;
+- Spring Boot 3.5.7 ;
+- Maven Wrapper ;
+- Spring Web ;
+- Spring Data JPA / Hibernate ;
+- Spring Security ;
+- JWT avec JJWT 0.12.6 ;
+- Bean Validation ;
+- PostgreSQL ;
+- Liquibase 4.31.1 ;
+- Springdoc OpenAPI / Swagger 2.8.13 ;
+- OpenPDF 2.0.5 pour les factures PDF ;
+- H2 uniquement pour les tests ;
+- Spotless pour le formatage Java.
+
+Frontend :
+
+- Angular 22 ;
+- TypeScript 6 ;
+- composants standalone ;
+- Angular Router ;
+- Reactive Forms ;
+- HttpClient ;
+- PrimeIcons 8 ;
+- FullCalendar 7 avec connecteur Angular officiel ;
+- Vitest ;
+- Prettier.
+
+PrimeNG 22 et @primeuix/themes ont été retirés le 29 septembre 2026 : aucune
+page n'utilisait de composant PrimeNG et leur simple fournisseur de thème
+affichait « Invalid PrimeUI License ». L'interface utilise actuellement des
+composants Angular/CSS propriétaires et PrimeIcons, sans avertissement de
+licence. Ne pas réintroduire PrimeNG 22 sans clé valide.
+
+Infrastructure :
+
+- Supabase PostgreSQL pour la base distante ;
+- PostgreSQL 16 local disponible avec Docker Compose ;
+- Dockerfiles backend et frontend ;
+- Nginx dans l'image frontend ;
+- proxy Angular local de /api vers http://localhost:8080.
+
+
+6. STRUCTURE PRINCIPALE DU DÉPÔT
+--------------------------------
+
+GaragePilot/
+  backend/                       API Spring Boot
+  GaregePilotFront/              application Angular
+  docs/facturation.md            informations requises sur les documents
+  supabase/garagepilot-demo-data.sql
+                                 jeu de données de démonstration réexécutable
+  output/pdf/                    exemples de PDF générés
+  compose.yaml                   PostgreSQL, backend et frontend
+  .env                           secrets locaux, ignorés par Git
+  .env.example                   modèle de configuration sans secrets
+  README.md                      démarrage rapide
+  CONTEXTE_GARAGEPILOT.txt       présent document
+
+
+7. MULTI-TENANT ET SÉCURITÉ
+---------------------------
+
+GaragePilot est multi-garages. Chaque donnée métier appartient à un garage par
+garage_id. Un utilisateur appartient également à un garage.
+
+Règle absolue : un utilisateur du garage A ne doit jamais lire ou modifier une
+donnée du garage B, même s'il connaît son UUID.
+
+Le garage_id est récupéré depuis l'utilisateur authentifié/JWT. Il ne doit pas
+être accepté aveuglément depuis Angular.
+
+Les repositories et services doivent utiliser des recherches de la forme :
+
+findByIdAndGarageId(id, garageId)
+
+et jamais un simple findById(id) pour une ressource métier exposée.
+
+Les modules Client, Vehicle et Invoice appliquent actuellement ce filtrage.
+Les futurs modules doivent obligatoirement appliquer la même règle.
+
+Supabase utilise également Row Level Security sur les tables métier. L'isolation
+principale de l'application reste néanmoins contrôlée dans le backend Spring,
+car les appels passent par l'API et non directement par Angular.
+
+Autres règles :
+
+- mots de passe hachés avec BCrypt ;
+- aucun mot de passe dans les DTO ;
+- endpoints protégés par Spring Security ;
+- JWT ajouté par l'intercepteur Angular ;
+- validation backend obligatoire ;
+- entités JPA jamais retournées directement ;
+- erreurs gérées par un RestControllerAdvice ;
+- données métier importantes désactivées plutôt que supprimées définitivement ;
+- calculs financiers réalisés dans le backend avec BigDecimal ;
+- aucun secret codé en dur dans les sources.
+
+Rôles prévus : OWNER, ADMIN, MECHANIC et RECEPTION.
+
+
+8. BASE DE DONNÉES ET LIQUIBASE
+-------------------------------
+
+Le profil actif par défaut est « supabase ». La configuration charge d'abord
+backend/.env si présent, puis le .env placé à la racine du projet.
+
+Variables importantes :
+
+SPRING_PROFILES_ACTIVE
+DATABASE_URL / DATABASE_USERNAME / DATABASE_PASSWORD
+SUPABASE_DB_HOST / SUPABASE_DB_PORT / SUPABASE_DB_NAME
+SUPABASE_DB_USER / SUPABASE_DB_PASSWORD
+JWT_SECRET / JWT_EXPIRATION_MINUTES
+
+Ne pas recopier les valeurs réelles dans ce fichier.
+
+Liquibase est la seule source autorisée pour modifier le schéma. Hibernate est
+configuré avec ddl-auto=validate et ne doit pas créer/modifier la production.
+
+Changelogs actuels :
+
+001-initial-schema.yaml
+  - garages
+  - users
+  - clients (initialement customers avant renommage)
+  - vehicles
+
+002-enable-row-level-security.yaml
+  - activation initiale de la RLS PostgreSQL
+
+003-rename-customer-to-client.yaml
+  - renommage customers vers clients
+  - renommage customer_id vers client_id
+
+004-create-operational-tables.sql
+  - appointments
+  - work_orders
+  - work_order_items
+  - quotes
+  - quote_items
+  - invoices
+  - invoice_items
+  - payments
+  - index et RLS associés
+
+005-fix-composite-unique-constraints.sql
+  - corrections des contraintes uniques tenant-aware
+
+Tables déjà présentes dans Supabase :
+
+garages, users, clients, vehicles, appointments, work_orders,
+work_order_items, quotes, quote_items, invoices, invoice_items et payments.
+
+
+9. DONNÉES DE DÉMONSTRATION
+---------------------------
+
+Le fichier supabase/garagepilot-demo-data.sql peut être copié dans le SQL Editor
+de Supabase et exécuté pour alimenter le garage de démonstration existant.
+
+Il est idempotent : les UUID sont déterministes et les INSERT utilisent
+ON CONFLICT. Il peut donc être réexécuté sans multiplier les mêmes données.
+
+Il recherche le garage grâce au compte OWNER suivant :
+
+E-mail : demo.20260929151433@garagepilot.local
+Mot de passe de démonstration local : GaragePilotDemo!2026
+
+Ce compte est exclusivement destiné au développement et ne doit pas devenir un
+compte de production.
+
+Le script insère ou met à jour :
+
+- 20 clients ;
+- 25 véhicules ;
+- 14 rendez-vous ;
+- 10 ordres de réparation ;
+- 30 lignes d'intervention ;
+- 6 devis ;
+- 18 lignes de devis ;
+- 8 factures ;
+- 24 lignes de facture ;
+- 4 paiements.
+
+Exemple visible : facture FAC-2026-0008 pour Mehdi El Amrani et Opel Astra,
+plaque GP-008-D.
+
+
+10. BACKEND DÉJÀ IMPLÉMENTÉ
+----------------------------
+
+Authentification :
+
+- POST /api/auth/register
+  crée un Garage et son premier utilisateur OWNER ;
+- POST /api/auth/login
+  vérifie les identifiants et retourne un access token JWT ;
+- JwtAuthenticationFilter charge l'utilisateur ;
+- CurrentUser donne accès à l'identité et au garage connectés ;
+- SecurityConfig définit les routes publiques et protégées.
+
+Clients :
+
+- GET /api/clients avec recherche et pagination ;
+- GET /api/clients/{id} ;
+- POST /api/clients ;
+- PUT /api/clients/{id} ;
+- DELETE /api/clients/{id}, qui désactive le client ;
+- validation et isolation par garage.
+
+Véhicules :
+
+- GET /api/vehicles avec recherche et pagination ;
+- GET /api/vehicles/{id} ;
+- POST /api/vehicles ;
+- PUT /api/vehicles/{id} ;
+- DELETE /api/vehicles/{id}, qui désactive le véhicule ;
+- lien obligatoire avec un client du même garage ;
+- isolation par garage.
+
+Factures :
+
+- GET /api/invoices avec recherche et pagination ;
+- GET /api/invoices/{id} pour le détail ;
+- POST /api/invoices pour créer une facture et ses lignes ;
+- GET /api/invoices/{id}/pdf pour télécharger la facture ;
+- PUT /api/invoices/{id} pour modifier uniquement une facture au statut DRAFT ;
+- recalcul backend du sous-total, de la TVA, du total, du payé et du solde ;
+- lignes de type LABOR, PART, SERVICE ou OTHER ;
+- statuts DRAFT, ISSUED, PARTIALLY_PAID, PAID, OVERDUE et CANCELLED ;
+- contrôle du garage sur la facture et ses relations ;
+- génération PDF A4 avec informations garage, client, véhicule, lignes,
+  sous-total, TVA, total TTC, montant payé et solde ;
+- nom téléchargé : facture-{numero}.pdf.
+
+Gestion des erreurs :
+
+- ApiExceptionHandler centralise les erreurs ;
+- ResourceNotFoundException pour les ressources absentes ;
+- BusinessException pour les règles métier ;
+- format de réponse API cohérent.
+
+
+11. FRONTEND DÉJÀ IMPLÉMENTÉ
+-----------------------------
+
+Infrastructure :
+
+- composants Angular standalone ;
+- route guard pour empêcher l'accès sans authentification ;
+- intercepteur HTTP ajoutant le Bearer token ;
+- AuthService pour la session ;
+- layout principal avec navigation latérale ;
+- styles responsive pour ordinateur et tablette.
+
+Routes actuelles :
+
+/login
+/dashboard
+/clients
+/vehicles
+/invoices
+/invoices/new
+/invoices/:id/edit
+/invoices/:id
+
+Page Clients :
+
+- tableau des clients ;
+- recherche ;
+- pagination ;
+- état de chargement et erreurs ;
+- service d'état propre à la page.
+
+Page Véhicules :
+
+- tableau des véhicules venant de Supabase via le backend ;
+- plaque, marque, modèle, client et kilométrage ;
+- recherche rapide ;
+- pagination ;
+- service d'état propre à la page.
+
+Page Factures :
+
+- tableau avec numéro, client, véhicule, date, total, payé, solde et statut ;
+- bouton « Nouvelle facture » fonctionnel ;
+- bouton « Voir » sur chaque ligne ;
+- navigation vers /invoices/:id.
+
+Page Création/Modification de facture :
+
+- sélection du client et filtrage de ses véhicules ;
+- dates d'émission et d'échéance ;
+- ajout et suppression de lignes ;
+- types main-d'œuvre, pièce, service et autre ;
+- taux de TVA 0, 6, 12 et 21 % ;
+- création d'un nouveau brouillon ;
+- modification d'un brouillon existant uniquement ;
+- aucun total officiel calculé dans Angular : le backend reste la source de vérité.
+
+Page Détail de facture :
+
+- présentation complète de la facture dans le navigateur ;
+- garage, client, véhicule, dates, lignes et totaux ;
+- bouton « Télécharger le PDF » ;
+- appel à GET /api/invoices/{id}/pdf ;
+- création d'un téléchargement navigateur à partir du Blob reçu.
+
+Le téléchargement a été vérifié par le chemin réel du frontend :
+
+http://localhost:4200/api/invoices/{id}/pdf
+
+Réponse observée : HTTP 200, Content-Disposition attachment et fichier PDF
+valide. Le backend doit être recompilé/redémarré après ajout d'OpenPDF ; une
+ancienne JVM IntelliJ ne possédant pas cette dépendance provoquait le message
+« Impossible de télécharger le PDF ».
+
+Le dashboard utilise GET /api/dashboard et affiche des données réelles du
+garage connecté : rendez-vous du jour, véhicules en atelier, devis en attente,
+factures impayées, chiffre d'affaires, créances, évolution sur six mois,
+répartition des statuts de factures, pipeline atelier et taux d'encaissement.
+
+Le planning utilise FullCalendar et propose les vues mois, semaine, jour et
+liste. Il charge uniquement les rendez-vous du garage connecté et permet de
+créer ou modifier un rendez-vous en sélectionnant client, véhicule et
+prestation.
+
+La page Prestations gère un catalogue par garage avec catégorie, description,
+durée, prix HTVA, TVA et couleur. Huit prestations modifiables sont créées par
+défaut pour les garages existants et pour les nouveaux garages.
+
+L'espace /admin est réservé au rôle SUPER_ADMIN. Il présente toutes les
+sociétés, leurs utilisateurs, véhicules, factures, CA et créances. Il permet
+de consulter les factures récentes, créer/modifier/désactiver les utilisateurs
+et suspendre/réactiver une société. Les endpoints /api/admin/** sont protégés
+côté backend par @PreAuthorize ; le guard Angular ne constitue qu'un confort UX.
+
+
+12. MODULES PRÉSENTS EN BASE MAIS PAS ENCORE CODÉS DANS L'API
+-------------------------------------------------------------
+
+Les tables et données de démonstration existent déjà pour faciliter le visuel,
+mais les modèles Java, services, contrôleurs et pages Angular complets restent à
+construire pour :
+
+- WorkOrder / Atelier ;
+- WorkOrderItem ;
+- Quote / Devis ;
+- QuoteItem ;
+- Payment / Paiement.
+
+À développer ensuite :
+
+- LaborEntry ;
+- Part ;
+- WorkOrderFile et stockage de photos ;
+- historique véhicule ;
+- recherche globale ;
+- notifications ;
+- gestion autonome des utilisateurs par l'OWNER du garage (distincte de
+  l'administration globale SUPER_ADMIN).
+
+Le fait qu'une table existe ne signifie pas que la fonctionnalité API est déjà
+terminée. Toujours vérifier les fichiers Java et Angular réels.
+
+
+13. INFORMATIONS ATTENDUES SUR LES FACTURES
+-------------------------------------------
+
+Le document docs/facturation.md décrit les informations à prévoir d'après le
+modèle papier fourni comme référence.
+
+Informations garage : nom, raison sociale, adresse, téléphone, e-mail, TVA,
+numéro d'entreprise et référence interne.
+
+Informations client : particulier/société, nom, adresse, téléphone, e-mail,
+TVA et personne de contact.
+
+Informations véhicule : plaque, marque, modèle, version, VIN, carburant,
+kilométrage, première immatriculation et autres informations pertinentes.
+
+Informations document : numéro, dates, lignes, quantités, prix, TVA, totaux,
+paiements, remarques et éventuellement signature.
+
+Décision importante pour une future amélioration : une facture émise doit
+conserver un instantané des informations du garage, du client et du véhicule.
+Une modification ultérieure d'un client ne doit pas changer une ancienne
+facture. L'implémentation actuelle repose encore principalement sur les relations
+vers les entités courantes ; le snapshot complet reste à ajouter.
+
+
+14. COMMANDES DE DÉVELOPPEMENT
+------------------------------
+
+Prérequis Windows : JDK 17, Node/npm et Docker si la base locale est utilisée.
+
+Backend depuis la racine du projet :
+
+cd backend
+$env:JAVA_HOME = 'C:\Users\pasch\.jdks\ms-17.0.19'
+.\mvnw.cmd spring-boot:run
+
+Le backend écoute sur : http://localhost:8080
+Swagger : http://localhost:8080/swagger-ui/index.html
+
+Tests et formatage backend :
+
+cd backend
+$env:JAVA_HOME = 'C:\Users\pasch\.jdks\ms-17.0.19'
+.\mvnw.cmd spotless:apply test
+
+Frontend :
+
+cd GaregePilotFront
+npm install
+npm start
+
+Le frontend écoute sur : http://localhost:4200
+
+Vérifications frontend :
+
+cd GaregePilotFront
+npm run format:check
+npm test -- --watch=false
+npm run build
+
+PostgreSQL local uniquement :
+
+docker compose up postgres
+
+Stack Docker complète :
+
+docker compose up --build
+
+
+15. DERNIÈRES VÉRIFICATIONS RÉUSSIES
+------------------------------------
+
+État au 29 septembre 2026 :
+
+- compilation backend réussie avec Java 17 ;
+- 5 tests backend réussis, dont l'isolation multi-garage Client, Vehicle et Invoice ;
+- connexion Supabase réussie ;
+- Liquibase indique que les 7 changesets sont appliqués sur Supabase ;
+- compilation Angular réussie ;
+- 2 tests frontend réussis ;
+- récupération des clients, véhicules et factures réussie ;
+- détail d'une facture réussi ;
+- génération PDF réussie ;
+- rendu visuel du PDF contrôlé ;
+- téléchargement PDF via le proxy Angular : HTTP 200.
+- GET /api/dashboard validé avec 6 points mensuels et 4 statuts de factures ;
+- GET /api/appointments validé avec 14 rendez-vous de démonstration ;
+- GET /api/services validé avec 8 prestations ;
+- GET /api/admin/overview validé avec le rôle SUPER_ADMIN ;
+- vérification visuelle réussie des pages Dashboard, Planning, Prestations et
+  Administration, sans erreur console ;
+- avertissement « Invalid PrimeUI License » supprimé à la source.
+
+Un exemple contrôlé existe dans :
+
+output/pdf/garagepilot-facture-demo.pdf
+
+
+16. PROBLÈMES DÉJÀ RENCONTRÉS ET SOLUTIONS
+------------------------------------------
+
+Backend tentant localhost:5432 :
+
+Cause : variables Supabase non chargées ou ancien profil.
+Solution : .env à la racine, profil supabase et application-supabase.yml.
+
+« Impossible de charger les véhicules » :
+
+Cause rencontrée : backend non démarré, ancienne JVM ou données non associées au
+garage connecté. Vérifier le port 8080, les logs, le JWT et le garage_id.
+
+« Impossible de télécharger le PDF » :
+
+Cause rencontrée : Angular utilisait bien 8080, mais ce port était occupé par
+une ancienne JVM IntelliJ démarrée avant l'ajout d'OpenPDF et du nouvel endpoint.
+Solution : recharger Maven dans IntelliJ, arrêter l'ancienne exécution, compiler
+et redémarrer le backend.
+
+« Invalid PrimeUI License » :
+
+Cause : providePrimeNG et @primeuix/themes initialisaient PrimeNG 22 alors
+qu'aucun composant PrimeNG n'était utilisé. Solution appliquée : suppression de
+ces deux dépendances et du fournisseur de thème. PrimeIcons reste utilisé. Ne
+jamais masquer cet avertissement par CSS ni modifier node_modules.
+
+API retournant 403 après vérification de l'état du garage :
+
+Cause : JwtAuthenticationFilter accédait à Garage.active via une relation LAZY
+après la fermeture de la transaction du repository. L'exception était capturée
+et l'authentification effacée. Solution : UserRepository.findSecurityUserById
+charge explicitement le garage avec @EntityGraph.
+
+Code écrit sur une seule ligne :
+
+Solution mise en place : Spotless pour Java et Prettier pour Angular. Exécuter
+les commandes de formatage avant livraison.
+
+Affichage de caractères accentués étrange dans certaines sorties PowerShell :
+
+Il peut s'agir de l'encodage de la console, pas nécessairement du fichier. Les
+PDF générés ont été contrôlés visuellement et affichent correctement les accents.
+
+
+17. RÈGLES DE DÉVELOPPEMENT À CONSERVER
+---------------------------------------
+
+- analyser l'existant avant de modifier ;
+- ne rien supprimer d'utile ;
+- avancer module par module ;
+- compiler et tester après chaque module ;
+- corriger les erreurs avant la suite ;
+- garder les contrôleurs limités au HTTP ;
+- placer la logique métier dans les services ;
+- placer les requêtes dans les repositories ;
+- utiliser des DTO aux frontières de l'API ;
+- conserver une architecture simple et cohérente ;
+- ne pas créer d'abstractions ou packages inutiles ;
+- ne jamais retourner directement une entité JPA ;
+- ne jamais faire confiance aux totaux envoyés par Angular ;
+- utiliser BigDecimal pour l'argent ;
+- filtrer toutes les ressources par garage ;
+- ne jamais sécuriser une action uniquement en masquant un bouton Angular ;
+- utiliser Liquibase pour tout changement de schéma ;
+- ne jamais mettre de secret en dur ;
+- ne pas enregistrer les photos en base64 dans PostgreSQL ;
+- ne pas implémenter de fausse API externe ;
+- conserver un code formaté et lisible avec des retours à la ligne normaux.
+
+
+18. ORDRE CONSEILLÉ POUR LA SUITE
+---------------------------------
+
+1. Implémenter WorkOrder, WorkOrderItem et la page Atelier.
+2. Implémenter Quote et QuoteItem.
+3. Implémenter Payment et la mise à jour automatique du solde/statut facture.
+4. Construire l'historique complet d'un véhicule.
+5. Ajouter la gestion des utilisateurs par OWNER/ADMIN dans chaque garage.
+6. Ajouter les photos d'intervention avec une abstraction de stockage.
+7. Ajouter les notifications simples.
+8. Ajouter les snapshots légaux des données sur devis/factures émis.
+9. Renforcer les tests de sécurité, validation, upload et IDOR.
+10. Optimiser les agrégations de l'administration globale quand le nombre de
+    garages augmente.
+
+Car-Pass, Peppol, IA vocale et OCR restent hors du MVP immédiat.
+
+
+19. CONSIGNE POUR LA PROCHAINE DISCUSSION
+-----------------------------------------
+
+Ne pas supposer qu'une fonctionnalité est terminée uniquement parce qu'elle est
+mentionnée dans ce document. Commencer par lire ce fichier entièrement, puis
+inspecter les sources, la configuration et les tests actuels.
+
+Avant chaque changement :
+
+1. résumer brièvement l'état réel constaté ;
+2. annoncer le module traité ;
+3. modifier les fichiers existants avec soin ;
+4. formater ;
+5. compiler ;
+6. lancer les tests ;
+7. tester le parcours utilisateur concerné ;
+8. mettre à jour CONTEXTE_GARAGEPILOT.txt si l'état du projet change.
+
+FIN DU DOCUMENT

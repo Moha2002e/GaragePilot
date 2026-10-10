@@ -1,0 +1,39 @@
+<!--
+  GaragePilot - logo principal (lockup horizontal, version sur fond sombre).
+  Marque : un arc de cadran (jauge) au-dessus d'un profil de voiture posé sur la
+  ligne de base ambre. Le mot-symbole utilise Archivo (axe large) avec repli
+  systeme ; convertir en courbes avant impression si la police n'est pas embarquee.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 150" width="620" height="150" role="img" aria-label="GaragePilot">
+  <defs>
+    <linearGradient id="gpAmber" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF6A0A"/>
+      <stop offset="1" stop-color="#FFB020"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Marque -->
+  <g transform="translate(8 11)">
+    <path d="M26 86 A38 38 0 0 1 102 86" fill="none" stroke="#4A6170" stroke-width="5"
+          stroke-linecap="round" stroke-dasharray="2 13"/>
+    <path d="M14 86 A50 50 0 0 1 114 86" fill="none" stroke="url(#gpAmber)" stroke-width="11"
+          stroke-linecap="round"/>
+    <path d="M28 84 L33 72 Q35 67 41 66 L58 64 Q66 63 72 67 L84 74 L92 76 Q98 78 98 84 Z"
+          fill="#F2F7FA"/>
+    <rect x="22" y="89" width="84" height="4.5" rx="2.25" fill="url(#gpAmber)"/>
+    <g fill="url(#gpAmber)">
+      <circle cx="44" cy="84" r="6.5"/>
+      <circle cx="84" cy="84" r="6.5"/>
+    </g>
+    <g fill="#0A1016">
+      <circle cx="44" cy="84" r="2.4"/>
+      <circle cx="84" cy="84" r="2.4"/>
+    </g>
+  </g>
+
+  <!-- Mot-symbole -->
+  <text x="146" y="78" font-family="Archivo, 'Archivo Expanded', 'Helvetica Neue', Arial, sans-serif"
+        font-size="58" font-weight="800" font-stretch="125%" letter-spacing="-1.2" fill="#F2F7FA">Garage<tspan fill="#FF8A23">Pilot</tspan></text>
+  <text x="148" y="108" font-family="'JetBrains Mono', ui-monospace, 'Courier New', monospace"
+        font-size="13" letter-spacing="4.6" fill="#92A8B6">GESTION DE GARAGE &#183; BELGIQUE</text>
+</svg>
